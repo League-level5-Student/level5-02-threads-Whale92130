@@ -29,15 +29,37 @@ public class WorkQueue implements Runnable {
 			synchronized (jobQueue) {
 				try {
 					jobQueue.wait();
-				}
-				catch(InterruptedException e) {
+				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
 		}
 	}
 
+	public void completeAllJobs() {
+		while (!jobQueue.isEmpty()) {
+			preformJob();
+		}
+	}
+
+	public boolean preformJob() {
+		Job j = null;
+		synchronized (jobQueue) {
+			if (!jobQueue.isEmpty()) {
+				j = jobQueue.remove();
+			}
+		}
+		if (j != null) {
+			j.preform();
+			return true;
+
+		} else {
+			return false;
+		}
+	}
+
 	public void shutdown() {
+		completeAllJobs();
 		isRunning = false;
 		synchronized (jobQueue) {
 			jobQueue.notifyAll();
